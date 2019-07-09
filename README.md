@@ -21,6 +21,8 @@ The style used is strict Typescript.
 
 The following acts as reference to the general guidelines for the maintenance of the project through conventions, guidelines, etc.
 
+[Git Strict Flow and GitHub Project Guidelines](https://gist.github.com/rsp/057481db4dbd999bb7077f211f53f212)
+
 ## Dev installation
 To install, the following programs must be present on the dev machine for development:
 - Visual Studio Code
