@@ -1,65 +1,37 @@
-# pre-flight-vscode README
+# Pre-Flight VS-Code extension
+##### Author: Zachary Cauchi
 
-This is the README for your extension "pre-flight-vscode". After writing up a brief description, we recommend including the following sections.
+## What is this project?
+The aims of this project are to provide a tool with which end-users can create and plan out 'interactive to-do lists' in their code where manual execution is required and such tasks cannot be automated. This tool will be implemented as an extension to the Visual Studio Code editor
 
-## Features
+This was initially a code-[kata](http://codekata.com/) to practice development of a publically available open-source project in as close a format to real-life projects as possible, while at the same time possibly helping my work colleagues.
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+## Who is responsible
+As of writing, this is a one-person project with me being the key holder of the work.
 
-For example if there is an image subfolder under your extension project workspace:
+## High-level details
+The project is written primarily in Typescript seeing as it's the language of choice by vscode.
 
-\!\[feature X\]\(images/feature-x.png\)
+### Testing
+[TODO] Add testing guidelines and procedures
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+### Style
+The style used is strict Typescript.
+[TODO] Elaborate on style used
 
-## Requirements
+The following acts as reference to the general guidelines for the maintenance of the project through conventions, guidelines, etc.
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+[Git Strict Flow and GitHub Project Guidelines](https://gist.github.com/rsp/057481db4dbd999bb7077f211f53f212)
 
-## Extension Settings
+## Dev installation
+To install, the following programs must be present on the dev machine for development:
+- Visual Studio Code
+- NodeJS
+- Git
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+Once installed, clone the repository to the dev machine and run `npm install` inside the directory from a command terminal. This should set up all remaining dependencies for the project.
 
-For example:
+## Running the extension (dev)
+To run the extension from Visual Studio Code, press F5 to build and run the extension in a newly-opened VSCode instance.
 
-This extension contributes the following settings:
-
-* `myExtension.enable`: enable/disable this extension
-* `myExtension.thing`: set to `blah` to do something
-
-## Known Issues
-
-Calling out known issues can help limit users opening duplicate issues against your extension.
-
-## Release Notes
-
-Users appreciate release notes as you update your extension.
-
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
------------------------------------------------------------------------------------------------------------
-
-## Working with Markdown
-
-**Note:** You can author your README using Visual Studio Code.  Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux)
-* Toggle preview (`Shift+CMD+V` on macOS or `Shift+Ctrl+V` on Windows and Linux)
-* Press `Ctrl+Space` (Windows, Linux) or `Cmd+Space` (macOS) to see a list of Markdown snippets
-
-### For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+If built correctly, a new VSCode window should open, and the command 'Hello World' should be present in the Command Palette (open the palette by pressing `Ctrl+Shift+P`)
