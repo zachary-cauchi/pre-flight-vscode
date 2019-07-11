@@ -41,8 +41,8 @@ steps:
   env:
     DISPLAY: ':99.0'
 
-pool:
-  vmImage: 'ubuntu-latest'
+# pool:
+#   vmImage: 'ubuntu-latest'
 
 # steps:
 # - task: NodeTool@0
