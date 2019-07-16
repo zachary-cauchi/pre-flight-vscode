@@ -23,7 +23,24 @@
 				"command": "extension.valuePrompter",
 				"title": "Enter Pre-Flight to execute"
 			}
-		]
+		],
+		"viewsContainers": {
+			"activitybar": [
+				{
+					"id": "pre-flight",
+					"title": "Pre-Flight",
+       				"icon": "res/checklist.svg"
+				}
+			]
+		},
+		"views": {
+			"pre-flight": [
+				{
+					"id": "pre-flights-explorer",
+					"name": "Pre-Flights Explorer"
+				}
+			]
+		}
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run compile",
