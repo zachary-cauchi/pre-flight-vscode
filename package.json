@@ -29,7 +29,7 @@
 				{
 					"id": "pre-flight",
 					"title": "Pre-Flight",
-       				"icon": "res/checklist.svg"
+					"icon": "res/checklist.svg"
 				}
 			]
 		},
@@ -60,5 +60,9 @@
 		"tslint": "^5.12.1",
 		"typescript": "^3.3.1",
 		"vscode-test": "^1.0.0-next.0"
+	},
+	"dependencies": {
+		"@types/yaml": "^1.0.2",
+		"yaml": "^1.6.0"
 	}
 }

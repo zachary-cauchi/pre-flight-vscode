@@ -1,6 +1,8 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
+import * as glob from 'glob';
+import * as yaml from 'yaml';
 
 /**
  * PreFlight View Provider for view 'pre-flights-explorer'.
@@ -29,7 +31,7 @@ export class PreFlightProvider implements vscode.TreeDataProvider<PreFlight> {
      * @memberof PreFlightProvider
      */
     refresh(): void {
-		this._onDidChangeTreeData.fire();
+        this._onDidChangeTreeData.fire();
     }
 
     /**
@@ -40,7 +42,7 @@ export class PreFlightProvider implements vscode.TreeDataProvider<PreFlight> {
      * @memberof PreFlightProvider
      */
     getTreeItem(element: PreFlight): vscode.TreeItem {
-		return element;
+        return element;
     }
 
     /**
@@ -52,61 +54,72 @@ export class PreFlightProvider implements vscode.TreeDataProvider<PreFlight> {
      */
     getChildren(element?: PreFlight): Thenable<PreFlight[]> {
         
-		if (!this.workspaceRoot) {
-			vscode.window.showInformationMessage('No dependency in empty workspace');
-			return Promise.resolve([]);
-		}
+        if (!this.workspaceRoot) {
+            vscode.window.showInformationMessage('A workspace isn\'t open. Cannot populate');
+            return Promise.resolve([]);
+        }
 
-		if (element && element.label) {
-			return Promise.resolve(this.getDepsInPackageJson(path.join(this.workspaceRoot, 'node_modules', element.label, 'package.json')));
-		} else {
-			const packageJsonPath = path.join(this.workspaceRoot, 'package.json');
-			if (this.pathExists(packageJsonPath)) {
-				return Promise.resolve(this.getDepsInPackageJson(packageJsonPath));
-			} else {
-				vscode.window.showInformationMessage('Workspace has no package.json');
-				return Promise.resolve([]);
-			}
-		}
+
+        if (element && element.label) {
+            vscode.window.showInformationMessage('No children can be displayed at this time');
+            return Promise.resolve([]);
+        } else {
+            const packageJsonPath = path.join(this.workspaceRoot, 'pre-flights');
+
+            if (this.pathExists(packageJsonPath)) {
+                return Promise.resolve(this.getPreflights(packageJsonPath));
+            } else {
+                vscode.window.showInformationMessage('Workspace has no package.json');
+                return Promise.resolve([]);
+            }
+        }
 
     }
 
-    private getDepsInPackageJson(packageJsonPath: string): PreFlight[] {
-		if (this.pathExists(packageJsonPath)) {
-			const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
+    private getPreflights(preFlightsPath: string): PreFlight[] {
+        if (this.pathExists(preFlightsPath)) {
+            // const results = JSON.parse(fs.readFileSync(preFlightsPath, 'utf-8'));
 
-			const toDep = (moduleName: string, version: string): PreFlight => {
-				if (this.pathExists(path.join(this.workspaceRoot, 'node_modules', moduleName))) {
-					return new PreFlight(moduleName, version, vscode.TreeItemCollapsibleState.Collapsed);
-				} else {
-					return new PreFlight(moduleName, version, vscode.TreeItemCollapsibleState.None, {
-						command: 'extension.openPackageOnNpm',
-						title: '',
-						arguments: [moduleName]
-					});
-				}
-			};
+            const toDep = (moduleName: string, version: string): PreFlight => {
+                if (this.pathExists(path.join(this.workspaceRoot, 'node_modules', moduleName))) {
+                    return new PreFlight(moduleName, version, vscode.TreeItemCollapsibleState.Collapsed);
+                } else {
+                    return new PreFlight(moduleName, version, vscode.TreeItemCollapsibleState.None, {
+                        command: 'extension.openPackageOnNpm',
+                        title: '',
+                        arguments: [moduleName]
+                    });
+                }
+            };
 
-			const deps = packageJson.dependencies
-				? Object.keys(packageJson.dependencies).map(dep => toDep(dep, packageJson.dependencies[dep]))
-				: [];
-			const devDeps = packageJson.devDependencies
-				? Object.keys(packageJson.devDependencies).map(dep => toDep(dep, packageJson.devDependencies[dep]))
-				: [];
-			return deps.concat(devDeps);
-		} else {
-			return [];
-		}
-	}
+            let contents = []
+            let scriptPaths = glob.sync('**/*.yml', { cwd: preFlightsPath, absolute: true }, ).forEach((scriptPath) => {
+                let script : Buffer = fs.readFileSync(scriptPath);
+                let preflight : PreFlight = yaml.parse(script.toString());
+                contents.push(script);
+            });
 
-	private pathExists(p: string): boolean {
-		try {
-			fs.accessSync(p);
-		} catch (err) {
-			return false;
-		}
+            // const scripts = results.dependencies
+            //     ? Object.keys(results.dependencies).map(dep => toDep(dep, results.dependencies[dep]))
+            //     : [];
+            // const devDeps = results.devDependencies
+            //     ? Object.keys(results.devDependencies).map(dep => toDep(dep, results.devDependencies[dep]))
+            //     : [];
+            // return deps.concat(devDeps);
+            return [];
+        } else {
+            return [];
+        }
+    }
 
-		return true;
+    private pathExists(p: string): boolean {
+        try {
+            fs.accessSync(p);
+        } catch (err) {
+            return false;
+        }
+
+        return true;
     }
 
 }
@@ -122,27 +135,27 @@ export class PreFlight extends vscode.TreeItem {
 
     /**
      * Creates an instance of PreFlight.
-     * @param {string} name The name of the pre-flight.
+     * @param {string} label The name of the pre-flight.
      * @param {string} body The contents of the pre-flight.
      * @param {vscode.TreeItemCollapsibleState} collapsibleState
      * @param {vscode.Command} [command]
      * @memberof PreFlight
      */
     constructor(
-        public name: string,
+        public label: string,
         public body: string,
         public readonly collapsibleState: vscode.TreeItemCollapsibleState,
         public readonly command?: vscode.Command
     ) {
-        super(name, collapsibleState);
+        super(label, collapsibleState);
     }
 
     get tooltip(): string {
-        return `${this.name} => ${this.body}`;
+        return `${this.label} => ${this.body}`;
     }
 
     get description(): string {
-        return `Testing item under name ${this.name}`;
+        return `Testing item under name ${this.label}`;
     }
 
     contextValue = 'pre-flight';

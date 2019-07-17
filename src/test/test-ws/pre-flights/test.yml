@@ -1,1 +1,11 @@
-test
+version: 0.0.1
+
+name: Test pre-flight
+
+config:
+  - name: test step
+    files: package.json
+    phrase: Requires a name be specified for the project
+  - name: second test step
+    files: tslint.ts
+    phrase: DefaultSeverity should equal "warning"
