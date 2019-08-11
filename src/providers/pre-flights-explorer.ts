@@ -3,6 +3,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 import * as glob from 'glob';
 import * as yaml from 'yaml';
+import { PreFlightFactory, IPreFlight, PreFlight } from '../models/pre-flight';
 
 /**
  * PreFlight View Provider for view 'pre-flights-explorer'.
@@ -16,11 +17,13 @@ import * as yaml from 'yaml';
  * @class PreFlightProvider
  * @implements {vscode.TreeDataProvider<PreFlight>}
  */
-export class PreFlightProvider implements vscode.TreeDataProvider<PreFlight> {
+export class PreFlightProvider implements vscode.TreeDataProvider<PreFlightTreeItem> {
 
     // Handles dispatching of events to/from vscode.
-    private _onDidChangeTreeData: vscode.EventEmitter<PreFlight | undefined> = new vscode.EventEmitter<PreFlight | undefined>();
-    readonly onDidChangeTreeData: vscode.Event<PreFlight | undefined> = this._onDidChangeTreeData.event;
+    private _onDidChangeTreeData: vscode.EventEmitter<PreFlightTreeItem | undefined> = new vscode.EventEmitter<PreFlightTreeItem | undefined>();
+    readonly onDidChangeTreeData: vscode.Event<PreFlightTreeItem | undefined> = this._onDidChangeTreeData.event;
+
+    private preFlightFactory = new PreFlightFactory();
 
     constructor(private workspaceRoot: string) {
     }
@@ -37,22 +40,22 @@ export class PreFlightProvider implements vscode.TreeDataProvider<PreFlight> {
     /**
      * Returns the provided PreFlight.
      *
-     * @param {PreFlight} element The pre-flight to return.
+     * @param {PreFlightTreeItem} element The pre-flight to return.
      * @returns {vscode.TreeItem}
      * @memberof PreFlightProvider
      */
-    getTreeItem(element: PreFlight): vscode.TreeItem {
+    getTreeItem(element: PreFlightTreeItem): vscode.TreeItem {
         return element;
     }
 
     /**
      * Populates the associated view with a returned array of PreFlight objects.
      *
-     * @param {PreFlight} [element]
-     * @returns {Thenable<PreFlight[]>}
+     * @param {PreFlightTreeItem} [element]
+     * @returns {Thenable<PreFlightTreeItem[]>}
      * @memberof PreFlightProvider
      */
-    getChildren(element?: PreFlight): Thenable<PreFlight[]> {
+    getChildren(element?: PreFlightTreeItem): Thenable<PreFlightTreeItem[]> {
         
         if (!this.workspaceRoot) {
             vscode.window.showInformationMessage('A workspace isn\'t open. Cannot populate');
@@ -69,44 +72,27 @@ export class PreFlightProvider implements vscode.TreeDataProvider<PreFlight> {
             if (this.pathExists(packageJsonPath)) {
                 return Promise.resolve(this.getPreflights(packageJsonPath));
             } else {
-                vscode.window.showInformationMessage('Workspace has no package.json');
+                vscode.window.showInformationMessage('Workspace has no pre-flights directory');
                 return Promise.resolve([]);
             }
         }
 
     }
 
-    private getPreflights(preFlightsPath: string): PreFlight[] {
+    private getPreflights(preFlightsPath: string): PreFlightTreeItem[] {
         if (this.pathExists(preFlightsPath)) {
-            // const results = JSON.parse(fs.readFileSync(preFlightsPath, 'utf-8'));
 
-            const toDep = (moduleName: string, version: string): PreFlight => {
-                if (this.pathExists(path.join(this.workspaceRoot, 'node_modules', moduleName))) {
-                    return new PreFlight(moduleName, version, vscode.TreeItemCollapsibleState.Collapsed);
-                } else {
-                    return new PreFlight(moduleName, version, vscode.TreeItemCollapsibleState.None, {
-                        command: 'extension.openPackageOnNpm',
-                        title: '',
-                        arguments: [moduleName]
-                    });
-                }
-            };
-
-            let contents = []
+            let contents : PreFlightTreeItem[] = [];
             let scriptPaths = glob.sync('**/*.yml', { cwd: preFlightsPath, absolute: true }, ).forEach((scriptPath) => {
-                let script : Buffer = fs.readFileSync(scriptPath);
-                let preflight : PreFlight = yaml.parse(script.toString());
-                contents.push(script);
+                let fileRaw : Buffer = fs.readFileSync(scriptPath);
+                let fileParsed : IPreFlight = yaml.parse(fileRaw.toString());
+
+                let preflight : PreFlight = this.preFlightFactory.createPreFlight(fileParsed);
+
+                contents.push(PreFlightTreeItem.fromPreFlight(preflight, vscode.TreeItemCollapsibleState.None));
             });
 
-            // const scripts = results.dependencies
-            //     ? Object.keys(results.dependencies).map(dep => toDep(dep, results.dependencies[dep]))
-            //     : [];
-            // const devDeps = results.devDependencies
-            //     ? Object.keys(results.devDependencies).map(dep => toDep(dep, results.devDependencies[dep]))
-            //     : [];
-            // return deps.concat(devDeps);
-            return [];
+            return contents;
         } else {
             return [];
         }
@@ -131,7 +117,7 @@ export class PreFlightProvider implements vscode.TreeDataProvider<PreFlight> {
  * @class PreFlight
  * @extends {vscode.TreeItem}
  */
-export class PreFlight extends vscode.TreeItem {
+export class PreFlightTreeItem extends vscode.TreeItem {
 
     /**
      * Creates an instance of PreFlight.
@@ -142,22 +128,24 @@ export class PreFlight extends vscode.TreeItem {
      * @memberof PreFlight
      */
     constructor(
-        public label: string,
-        public body: string,
+        public preflight: PreFlight,
         public readonly collapsibleState: vscode.TreeItemCollapsibleState,
         public readonly command?: vscode.Command
     ) {
-        super(label, collapsibleState);
+        super(preflight.name, collapsibleState);
+        this.contextValue = 'pre-flight';
     }
 
     get tooltip(): string {
-        return `${this.label} => ${this.body}`;
+        return `${this.label} => ${this.preflight.version}`;
     }
 
     get description(): string {
         return `Testing item under name ${this.label}`;
     }
 
-    contextValue = 'pre-flight';
+    static fromPreFlight(preflight : PreFlight, collapsibleState : vscode.TreeItemCollapsibleState) : PreFlightTreeItem {
+        return new PreFlightTreeItem(preflight, collapsibleState);
+    }
 
 }

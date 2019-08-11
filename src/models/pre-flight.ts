@@ -1,30 +1,49 @@
-export class PreFlight implements PreFlightParseable {
+/**
+ * A model for Pre-Flight procedure files.
+ *
+ * @export
+ * @class PreFlight
+ */
+export class PreFlight {
 
+    // The preflight version if specified. Otherwise, assumes the latest.
     readonly version ?: string;
+    // The name of the preflight.
     name: string;
-    config : PreFlightProcedure[];
+    // The associated procedures.
+    config : [];
 
-    constructor () {
+    constructor (data : IPreFlight) {
+        this.version = data.version || '0.0.1';
+        this.name = data.name;
+        this.config = data.config;
+    }
+
+}
+
+/**
+ * A factory.
+ *
+ * @export
+ * @class PreFlightFactory
+ */
+export class PreFlightFactory {
+    
+    createPreFlight(data : IPreFlight) : PreFlight;
+
+
+    public createPreFlight(data: IPreFlight) : PreFlight {
         
-        this.version = '0.0.1';
-        this.name = 'Testing';
-        this.config = [];
-    }
+        console.log(data);
 
-    public fromParseable (parseable : PreFlightParseable): PreFlight {
-        return new PreFlight();
+        return new PreFlight(data);
+
     }
 
 }
 
-export interface PreFlightParseable {
-    readonly version ?: string;
+export interface IPreFlight {
+    version?: string;
     name: string;
-    config : PreFlightProcedure[];
-
-    fromParseable(parseable: PreFlightParseable) : PreFlightParseable;
-}
-
-export class PreFlightProcedure {
-
+    config: [];
 }

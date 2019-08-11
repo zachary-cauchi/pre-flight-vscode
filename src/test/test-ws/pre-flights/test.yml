@@ -1,7 +1,10 @@
+# The API version of the preflight.
 version: 0.0.1
 
+# the name of the preflight.
 name: Test pre-flight
 
+# A list of procedures to be executed.
 config:
   - name: test step
     files: package.json
